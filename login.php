@@ -12,7 +12,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     if($username === "nombre@cesun.edu.mx" && $password === "12345"){
         //Redirigira al usuario a la pagina index.php
         $_SESSION['loggedin'] = true;
-        header('Location: index.html');
+        header('Location: index.php');
         exit;
     } else {
         $error = "Usuario o contraseña invalidos.";
@@ -26,7 +26,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Task Manager</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
     <div class="container">
@@ -36,7 +36,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         <?php echo $error; ?>
         <?php endif; ?>
 
-        <form method="post" action="login.php" id="login-form" class="form">
+        <form method="POST" action="login.php" id="login-form" class="form">
             <div class="form-group">
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
@@ -48,6 +48,5 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
             <button type="submit">Login</button>
         </form>
     </div>
-    <script src="login.js"></script>
 </body>
 </html>
