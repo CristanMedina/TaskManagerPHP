@@ -1,25 +1,46 @@
 <?php
+include "includes/db.php";
+include "includes/functions.php";
 
-session_start(); //Creamos una sesion o reanudar una existente.
+session_start();
 
-//verifica que el comentario fue enviado mediante el metodo post
-if($_SERVER['REQUEST_METHOD']==='POST'){
-    //Toma los datos de los campos
-    $username = $_POST['username'];
-    $password = $_POST['password']; 
-
-//Compara los datoas obtenidos con los que ya se tienen.
-    if($username === "nombre@cesun.edu.mx" && $password === "12345"){
-        //Redirigira al usuario a la pagina index.php
-        $_SESSION['loggedin'] = true;
-        header('Location: index.php');
-        exit;
-    } else {
-        $error = "Usuario o contraseña invalidos.";
-    }
+if (isset($_SESSION['id'])) {
+    header("Location: index.php");
+    exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $username = sanitizeInput($_POST['username']);
+        $password = $_POST['password'];
+
+        $sql = $conn->prepare("SELECT id, password FROM users WHERE username = ?");
+        $sql->bind_param("s", $username);
+        $sql->execute();
+        $result = $sql->get_result();
+
+        if ($result->num_rows == 0) {
+            $error = "No se encontró el usuario.";
+        } else {
+            $row = $result->fetch_assoc();
+            $hashedPassword = $row['password'];
+
+            if (!password_verify($password, $hashedPassword)) {
+                $error = "Contraseña incorrecta";
+            } else {
+                $_SESSION['loggedin'] = true;
+                $_SESSION['id'] = $row['id'];
+                header('Location: index.php');
+                exit();
+            }
+        }
+        $sql->close();
+    } else {
+        $error = "Por favor ingrese su nombre de usuario y contraseña.";
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,8 +53,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     <div class="container">
         <h1>Task Manager Login</h1>
 
-        <?php if(isset($error)): ?>
-        <?php echo $error; ?>
+        <?php if (!empty($error)): ?>
+            <div class="error-message">
+                <?php echo htmlspecialchars($error); ?>
+            </div>
         <?php endif; ?>
 
         <form method="POST" action="login.php" id="login-form" class="form">
